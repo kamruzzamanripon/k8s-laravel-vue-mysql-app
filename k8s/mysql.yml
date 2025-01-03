@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+  namespace: unicorn  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "secret"
+            - name: MYSQL_DATABASE
+              value: "laravel"
+            - name: MYSQL_USER
+              value: "laravel"
+            - name: MYSQL_PASSWORD
+              value: "secret"
+          # envFrom:
+          #   - secretRef:
+          #       name: mysql-secret
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysqldata
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysqldata
+          persistentVolumeClaim:
+            claimName: mysql-pvc    
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: unicorn
+spec:
+  selector:
+    app: mysql
+  ports:
+    - port: 3306
+      targetPort: 3306
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+  namespace: unicorn
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  hostPath:
+    path: /root/dockerize-two-app      
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: unicorn
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: unicorn
+type: Opaque
+data:
+  MYSQL_DATABASE: bGFyYXZlbA0K
+  MYSQL_USER: bGFyYXZlbA0K
+  MYSQL_PASSWORD: c2VjcmV0DQo=
+  MYSQL_ROOT_PASSWORD: c2VjcmV0DQo=

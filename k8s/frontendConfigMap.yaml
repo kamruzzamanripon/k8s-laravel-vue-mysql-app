@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+  namespace: unicorn
+data:
+  #VITE_BACKEND_URL: "http://laravel-backend.unicorn.svc.cluster.local"
+  VITE_BACKEND_URL: "http://backend.com"

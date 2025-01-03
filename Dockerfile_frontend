@@ -1,0 +1,32 @@
+# ------------------- Stage 1: Build Stage ------------------------------
+FROM node:23-alpine3.19 AS builder
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy package.json and package-lock.json for dependency installation
+COPY ./unicorn-frontend/package.json  ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the application source
+COPY ./unicorn-frontend ./
+
+RUN npm run build
+
+# ------------------- Stage 2: production Stage ------------------------------
+FROM node:23-alpine3.19 AS prod
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy built application from the builder stage
+#COPY --from=builder /app/dist /app/dist
+COPY --from=builder /var/www/html .
+
+# Expose port 3000
+EXPOSE 5173
+
+# Define the default command to run the application in development mode
+CMD ["npm", "run", "dev", "--", "--host"]

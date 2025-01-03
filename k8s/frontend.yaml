@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+  namespace: unicorn  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: syedkamruzzaman/uni_frontend:19
+          ports:
+            - containerPort: 5173
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+          volumeMounts:
+            - name: frontend-storage
+              mountPath: /usr/share/nginx/html
+
+        - name: nginx-frontend
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-frontend
+              mountPath: /etc/nginx/conf.d      
+      volumes:
+        - name: frontend-storage
+          persistentVolumeClaim:
+            claimName: frontend-pvc
+
+        - name: nginx-config-frontend
+          configMap:
+            name: nginx-config-frontend    
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: frontend-pv
+  namespace: unicorn
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /root/frontend-data            
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: frontend-pvc
+  namespace: unicorn
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: unicorn
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 5173
+      targetPort: 5173
+  type: ClusterIP

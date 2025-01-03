@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-backend
+  labels:
+    app: laravel-backend
+  namespace: unicorn
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-backend
+  template:
+    metadata:
+      labels:
+        app: laravel-backend
+    spec:
+      containers:
+        - name: laravel-backend
+          image: syedkamruzzaman/uni_backend:17
+          env:
+            - name: DB_CONNECTION
+              value: "mysql"
+            - name: DB_HOST
+              value: "mysql"
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_DATABASE
+              value: "laravel"
+            - name: DB_USERNAME
+              value: "laravel"
+            - name: DB_PASSWORD
+              value: "secret"
+          envFrom:
+            - configMapRef:
+                name: backend-config
+            # - secretRef:
+            #     name: laravel-secret
+                           
+        - name: nginx-backend
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-backend
+              subPath: default.conf
+              mountPath: /etc/nginx/conf.d/default.conf
+              readOnly: true
+            # - name: nginx-logs
+            #   mountPath: /var/log/nginx    
+      volumes:
+        - name: backend-storage
+          persistentVolumeClaim:
+            claimName: backend-pvc
+        - name: nginx-config-backend
+          configMap:
+            name: nginx-config-backend
+        # - name: nginx-logs
+        #   persistentVolumeClaim:
+        #     claimName: nginx-log-pvc   
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: backend-pv
+  namespace: unicorn
+spec:
+  capacity:
+    storage: 256Mi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /root/project/dockerize-two-app/k8s/backenddata             
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backend-pvc
+  namespace: unicorn
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 256Mi
+
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-backend
+  namespace: unicorn
+spec:
+  selector:
+    app: laravel-backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

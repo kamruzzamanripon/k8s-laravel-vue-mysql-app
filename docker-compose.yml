@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  web:
+    container_name: unicorn_frontend_container
+    image: unicorn_frontend_image
+    build:
+      context: .
+      dockerfile: Dockerfile_frontend
+      target: ${TARGET:-prod}
+    ports:
+      - 5173:5173  # Vite Dev server (frontend) 
+    volumes:
+      - ./unicorn-frontend:/app/web
+      - node_modules:/app/web/node_modules
+    depends_on:
+      - api
+    environment:
+      - VITE_BACKEND_URL=http://localhost:8888  
+    restart: on-failure:10
+    healthcheck:
+      test: curl --fail http://localhost:5050 || exit 1  # Frontend healthcheck
+      start_period: 5s
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - full_stack
+
+  api:
+    container_name: unicorn_backend_container
+    image: unicorn_backend_image
+    build:
+      context: .
+      dockerfile: Dockerfile_Backend
+    volumes:
+      - ./unicorn-backend:/app/api
+      #- ./shell-command-entrypoint:/app/shell-command-entrypoint
+    env_file:
+      - ./unicorn-backend/.env  
+    # environment:
+    #   MYSQL_DATABASE: laravel
+    #   MYSQL_USER: laravel
+    #   MYSQL_PASSWORD: secret
+    #   MYSQL_ROOT_PASSWORD: secret
+    restart: on-failure:10
+    #command: ["/bin/sh", "-c", "composer install && php artisan migrate:refresh --seed && php-fpm -D && nginx -g 'daemon off;'"]
+    #command: ["/bin/sh", "-c", "/app/shell-command-entrypoint/backend-entrypoint.sh"]
+    #entrypoint: ["/bin/sh", "/app/shell-command-entrypoint/backend-entrypoint.sh"]   
+    networks:
+      - full_stack
+
+  nginx_backend:
+    image: nginx:stable-alpine
+    container_name: nginx_backend
+    ports:
+      - "8888:80"
+    volumes:
+      #- ./unicorn-backend:/var/www/html
+      #- ./docker/nginx/default-load-balancer.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/backend_nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - api
+    networks:
+      - full_stack 
+
+  nginx_frontend:
+    image: nginx:stable-alpine
+    container_name: nginx_frontend
+    ports:
+      - "3000:80"
+    volumes:
+      # - ./unicorn-frontend:/var/www/html
+      # - ./nginx/frontend_nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/frontend_nginx_proxy_pass.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - web
+    networks:
+      - full_stack
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - 3306:3306
+    env_file:
+      - ./unicorn-backend/.env  
+    # environment: 
+      # MYSQL_DATABASE: laravel
+      # MYSQL_USER: laravel
+      # MYSQL_PASSWORD: secret
+      # MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      -  mysql-data:/var/lib/mysql 
+    networks:
+      - full_stack 
+
+networks:
+  full_stack:
+    driver: bridge
+
+volumes:
+  node_modules:  
+  mysql-data:  

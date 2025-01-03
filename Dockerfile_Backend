@@ -1,0 +1,58 @@
+# Base image
+FROM php:8.3-fpm-alpine AS base
+
+# Install necessary extensions and tools
+RUN apk --no-cache add mysql-client curl git libxml2-dev libzip-dev zip \
+    && docker-php-ext-install pdo_mysql zip xml opcache
+
+# Add Composer globally
+ENV COMPOSER_HOME=/tmp
+COPY --from=composer:2.7.7 /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Stage 1: Dependencies Installation
+FROM base AS deps
+
+# Copy composer files
+COPY ./unicorn-backend/composer.json ./unicorn-backend/composer.lock ./
+
+# Install dependencies without scripts or autoload
+RUN composer install --no-dev --no-autoloader --no-scripts --prefer-dist
+
+# Stage 2: Production
+FROM base AS prod
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
+COPY ./unicorn-backend/ ./
+
+# Copy vendor folder from deps stage
+COPY --from=deps /var/www/html/vendor /var/www/html/vendor
+
+# Optimize Composer autoload and Laravel
+RUN composer require fakerphp/faker --dev && composer dump-autoload --optimize \
+    && php artisan optimize 
+
+    
+
+# Allow Laravel to cache config, routes, etc.
+RUN php artisan config:cache && php artisan route:cache
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chmod -R 777 ./storage ./bootstrap/cache    
+
+# Expose port 9000 for php-fpm
+EXPOSE 9000    
+
+# Run migrations and seeders during runtime (Optional)
+CMD ["sh", "-c", "php artisan migrate --force && php artisan db:seed --force && php-fpm"]
+#CMD ["sh", "-c", "php artisan migrate --force && php-fpm"]
+
+#CMD ["php-fpm"]
+
+
