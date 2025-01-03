@@ -1,47 +1,12 @@
-apiVersion: apps/v1
-kind: Deployment
+---
+apiVersion: v1
+kind: ConfigMap
 metadata:
-  name: frontend
-  labels:
-    app: frontend
-  namespace: unicorn  
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: frontend
-  template:
-    metadata:
-      labels:
-        app: frontend
-    spec:
-      containers:
-        - name: frontend
-          image: syedkamruzzaman/uni_frontend:19
-          ports:
-            - containerPort: 5173
-          envFrom:
-            - configMapRef:
-                name: frontend-config
-          volumeMounts:
-            - name: frontend-storage
-              mountPath: /usr/share/nginx/html
-
-        - name: nginx-frontend
-          image: nginx:latest
-          ports:
-            - containerPort: 80
-          volumeMounts:
-            - name: nginx-config-frontend
-              mountPath: /etc/nginx/conf.d      
-      volumes:
-        - name: frontend-storage
-          persistentVolumeClaim:
-            claimName: frontend-pvc
-
-        - name: nginx-config-frontend
-          configMap:
-            name: nginx-config-frontend    
+  name: frontend-config
+  namespace: unicorn
+data:
+  #VITE_BACKEND_URL: "http://laravel-backend.unicorn.svc.cluster.local"
+  VITE_BACKEND_URL: "http://backend.com"
 
 ---
 apiVersion: v1
@@ -68,7 +33,53 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 256Mi
+      storage: 256Mi  
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+  namespace: unicorn  
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: syedkamruzzaman/uni_frontend:19
+          ports:
+            - containerPort: 5173
+          envFrom:
+            - configMapRef:
+                name: frontend-config
+          # volumeMounts:
+          #   - name: frontend-storage
+          #     mountPath: /usr/share/nginx/html
+
+        - name: nginx-frontend
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-config-frontend
+              mountPath: /etc/nginx/conf.d      
+      volumes:
+        - name: frontend-storage
+          persistentVolumeClaim:
+            claimName: frontend-pvc
+        - name: nginx-config-frontend
+          configMap:
+            name: nginx-config-frontend    
+
+
 
 ---
 apiVersion: v1
