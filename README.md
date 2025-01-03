@@ -1,90 +1,26 @@
 ## 📝 Introduction About APP:
 
-This project aims to provide a real-time chat experience that's both scalable and secure. With a focus on modern technologies, we're building an application that's easy to use and maintain.
+This application is a robust CRUD (Create, Read, Update, Delete) system designed to efficiently manage and manipulate data. The backend is powered by Laravel, a modern PHP framework that ensures secure and scalable operations. The frontend leverages the dynamic capabilities of Vue.js, offering a responsive and user-friendly interface.
+
+The application includes intuitive features such as filtering and searching, allowing users to quickly locate and interact with specific records. These features are designed to enhance usability and provide a seamless experience for managing data, whether it's for viewing, editing, or deleting entries.
+
+With its clean architecture and integration of advanced tools, this CRUD app is ideal for tasks ranging from basic data handling to more complex management requirements. Whether you're managing customer details, product inventories, or any other type of data, this application simplifies and accelerates the process.
 
 
 ## Detailed Workflow Description:
 
 
-![image](/asserts/images/01.png)
+![image](/asserts/images/Screenshot_9.png)
 
-
-## ✨ Features:
-
-
-* **Real-time Messaging**: Send and receive messages instantly using Socket.io 
-* **User Authentication & Authorization**: Securely manage user access with JWT 
-* **Scalable & Secure Architecture**: Built to handle large volumes of traffic and data 
-* **Modern UI Design**: A user-friendly interface crafted with React and TailwindCSS 
-* **Profile Management**: Users can upload and update their profile pictures 
-* **Online Status**: View real-time online/offline status of users 
-
-
-## 🛠️ Tech Stack:
-
-
-* **Backend:** Node.js, Express, MongoDB, Socket.io
-* **Frontend:** React, TailwindCSS
-* **Containerization:** Docker
-* **Orchestration:** Kubernetes (planned)
-* **Web Server:** Nginx
-* **State Management:** Zustand
-* **Authentication:** JWT
-* **Styling Components:** DaisyUI
-
-
-## 🔧 Prerequisites:
-
-
-* **[Node.js](https://nodejs.org/)** (v14 or higher)
-* **[Docker](https://www.docker.com/get-started)** (for containerizing the app)
-* **[Git](https://git-scm.com/downloads)** (to clone the repository)
-
-
-## 📝 Setup .env File:
-
-
-1. Navigate to the `backend` directory:
-```bash
-cd backend
-```
-2. Create a `.env` file and add the following content (modify the values as needed):
-```env
-MONGODB_URI=mongodb://mongoadmin:secret@mongodb:27017/dbname?authSource=admin
-JWT_SECRET=your_jwt_secret_key
-PORT=5001
-```
-> **Note:** Replace `your_jwt_secret_key` with a strong secret key of your choice.
-
-
-## 🏗️ Build and Run the Application"
-
-Follow these steps to build and run the application:
-
-1. Build & Run the Containers:
-
-```bash
-cd full-stack_chatApp
-```
-```bash
-docker-compose up -d --build
-```
-
-2. Access the application in your browser:
-
-```
-http://localhost
-```
 
 ## 📚 Project Snapshots:
 
-![Settings](frontend/public/settings.png)
+![Settings](/asserts/images/Screenshot_9.jpg)
 
-![chat](frontend/public/chat.png)
+![chat](/asserts/images/Screenshot_10.jpg)
 
-![logout](/frontend/public/logout.png)
+![logout](/asserts/images/Screenshot_11.jpg)
 
-![Login](/frontend/public/login.png)
 
 #
 # 🚀 Getting Started For k8s
@@ -115,7 +51,7 @@ http://localhost
 
 - <b>RAM - 4GB</b>
 - <b>CPU - 2 Core(s)</b>
-- <b>Storage - 20 GB</b>
+- <b>Storage - 30 GB</b>
 - <b>One Domain</b>
 
 #
@@ -196,7 +132,7 @@ kubectl cluster-info
 > [!Note]
 > Here i add extraPortMappings for running Ingress
 
-![image](/asserts/images/Screenshot_9.jpg)
+![image](/asserts/images/Screenshot_12.jpg)
 
 
 #
@@ -212,7 +148,7 @@ Check Metallb configuration
 ```
 kubectl get all -n metallb-system
 ```
-![image](/asserts/images/Screenshot_5.jpg)
+![image](/asserts/images/Screenshot_13.jpg)
 
 #### 🛠️ Create a metallb_config.yaml file:
 ```
@@ -241,7 +177,10 @@ kubectl apply -f metallb_config.yaml
 ```
 kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
 ```
-![image](/asserts/images/Screenshot_6.jpg)
+```
+kubectl get all -n ingress-nginx
+```
+![image](/asserts/images/Screenshot_14.jpg)
 
 > [!Note]
 > Here service/ingress-nginx-controller show  EXTERNAL-IP is your VPS IP. My VPS IP is 160.191.163.33. It ensure that Our Metallb LoadBalance wroking.
@@ -261,7 +200,7 @@ Check Helm Version
 ```
 helm version
 ```
-![image](/asserts/images/Screenshot_7.jpg)
+![image](/asserts/images/Screenshot_15.jpg)
 
 
 
@@ -286,7 +225,7 @@ https://artifacthub.io/packages/helm/cert-manager/cert-manager
 ```
 kubectl get all -n cert-manager
 ```
-![image](/asserts/images/Screenshot_8.jpg)
+![image](/asserts/images/Screenshot_16.jpg)
 
 
 
@@ -298,12 +237,12 @@ kubectl get all -n cert-manager
 ### Step One 
 Clone below Project in your VPS
 ```
-git clone https://github.com/kamruzzamanripon/k8-node-react-mongodb-app.git
+git clone https://github.com/kamruzzamanripon/k8s-laravel-vue-mysql-app.git
 ```
 ### Step Two
 
 Go to k8s folder and you can see this file \
-![image](/asserts/images/Screenshot_10.jpg)
+![image](/asserts/images/Screenshot_17.jpg)
 
 ### Step Three
 Create Nampe Space
@@ -312,41 +251,41 @@ kubectl apply -f namespace.yaml
 ```
 
 ### Step Four
-Apply all Secret file
+Apply Nginx ConfigMap file
 ```
-kubectl apply -f backend-secret.yaml
-kubectl apply -f jwt-secret.yaml
-kubectl apply -f mongodb-secret.yaml
+kubectl apply -f nginx-config.yaml
 ```
 
 ### Step Five
-Declear Mongodb Volumes and Others
+Declear Mysql Volumes and Others
 ```
-kubectl apply -f mongo-pv.yaml
-kubectl apply -f mongo-pvc.yaml
-kubectl apply -f mongodb-deployment.yaml
-kubectl apply -f mongodb-service.yaml
+kubectl apply -f mysql.yaml
 ```
 ### Step Six
-Apply Rest of Other file
+Apply Backend App for Secret, ConfigMap and Others
 
 ```
-kubectl apply -f backend-deployment.yaml
-kubectl apply -f backend-service.yaml
-kubectl apply -f frontend-deployment.yaml
-kubectl apply -f frontend-service.yaml
+kubectl apply -f backend.yaml
 ```
+
 ### Step Seven
+Apply Frontend App for Secret, ConfigMap and Others
+
+```
+kubectl apply -f frontend.yaml
+```
+
+### Step Eight
 Configure SSL Certificate Domain. Open ssl_certificate.yaml and edit your desired domain name \
-![image](/asserts/images/Screenshot_11.jpg)
+![image](/asserts/images/Screenshot_18.jpg)
 
 Apply ssl_certificate.yaml file
 ```
 kubectl apply -f ssl_certificate.yaml
 ```
-### Step Eight
+### Step Nine
 Configure  Ingress file.  Open ingress.yaml and add your desired domain name. \
-![image](/asserts/images/Screenshot_12.jpg)
+![image](/asserts/images/Screenshot_19.jpg)
 
 Apply ingress.yaml file
 ```
@@ -354,21 +293,28 @@ kubectl apply -f ingress.yaml
 ```
 ### Check Certificate 
 ```
-kubectl get ClusterIssuer -n chat-app
-kubectl get Certificate -n chat-app
+kubectl get ClusterIssuer -n unicorn
+kubectl get Certificate -n unicorn
 ```
-![image](/asserts/images/Screenshot_18.jpg)
+![image](/asserts/images/Screenshot_20.jpg)
 
 ### Check NameSpace
 ```
-kubectl get all -n chat-app
+kubectl get all -n unicorn
 ```
-![image](/asserts/images/Screenshot_13.jpg)
+![image](/asserts/images/Screenshot_21.jpg)
 
-## 🌐 Browser View
-![image](/asserts/images/Screenshot_19.jpg)
-![image](/asserts/images/Screenshot_20.jpg)
+## 🌐 Browser View [Frontend]
+![image](/asserts/images/Screenshot_1.jpg)
+![image](/asserts/images/Screenshot_2.jpg)
+![image](/asserts/images/Screenshot_3.jpg)
 
+## 🌐 Browser View [Backend]
+![image](/asserts/images/Screenshot_4.jpg)
+
+## 🌐 Browser SSL Certificate
+![image](/asserts/images/Screenshot_22.jpg)
+![image](/asserts/images/Screenshot_23.jpg)
 
 ## 🎉 Conclusion
 
@@ -389,7 +335,10 @@ Now we are doing Extra features like Monitoring. It helps to know about servers 
 kubectl create namespace monitoring
 ```
 Check Namespace
-![image](/asserts/images/Screenshot_14.jpg)
+```
+kubectl get ns
+```
+![image](/asserts/images/Screenshot_24.jpg)
 > [!Note]
 > This Namespace helping to control all monitoring app like- Prometheus, Grafana, Loki ect
 
@@ -415,7 +364,7 @@ http://160.191.163.33:9090
 > [!Note]
 > Change IP Address
 
-![image](/asserts/images/Screenshot_2.jpg)
+![image](/asserts/images/Screenshot_25.jpg)
 
 
 
@@ -436,15 +385,15 @@ password
 ```
 kubectl get secret prometheus-stack-grafana -n monitoring -o jsonpath="{.data.admin-password}" | base64 --decode
 ```
-![image](/asserts/images/Screenshot_15.jpg)
+![image](/asserts/images/Screenshot_26.jpg)
 
 > [!Note]
 > You can change password
-![image](/asserts/images/Screenshot_16.jpg)
+![image](/asserts/images/Screenshot_27.jpg)
 
 #### Grafana Dashboard.
 Here you can choose different type Algorithm Dashboard 
-![image](/asserts/images/Screenshot_17.jpg)
+![image](/asserts/images/Screenshot_28.jpg)
 
 
 

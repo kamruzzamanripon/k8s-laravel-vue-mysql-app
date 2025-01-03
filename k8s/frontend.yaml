@@ -6,7 +6,7 @@ metadata:
   namespace: unicorn
 data:
   #VITE_BACKEND_URL: "http://laravel-backend.unicorn.svc.cluster.local"
-  VITE_BACKEND_URL: "http://backend.com"
+  VITE_BACKEND_URL: "https://ripon3.syed-kamruzzaman.com"
 
 ---
 apiVersion: v1
