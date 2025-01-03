@@ -8,7 +8,7 @@ metadata:
     kubernetes.io/ingress.class: nginx
 spec:
   rules:
-    - host: frontend.com
+    - host: ripon.syed-kamruzzaman.com
       http:
         paths:
           - path: /
@@ -18,7 +18,7 @@ spec:
                 name: frontend
                 port:
                   number: 5173
-    - host: backend.com
+    - host: ripon3.syed-kamruzzaman.com
       http:
         paths:
           - path: /
@@ -28,3 +28,8 @@ spec:
                 name: laravel-backend
                 port:
                   number: 80
+  tls:
+    - hosts:
+        - ripon.syed-kamruzzaman.com
+        - ripon3.syed-kamruzzaman.com
+      secretName: unicorn-app-tls
