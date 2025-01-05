@@ -34,7 +34,7 @@ services:
       context: .
       dockerfile: Dockerfile_Backend
     volumes:
-      - ./unicorn-backend:/app/api
+      - ./unicorn-backend:/var/www/html
       #- ./shell-command-entrypoint:/app/shell-command-entrypoint
     env_file:
       - ./unicorn-backend/.env  
